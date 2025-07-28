@@ -15,6 +15,7 @@
 #include <platsupport/plat/hpet.h>
 
 #include "../../ltimer.h"
+acpi_rsdp_t *rsdp_ptr;
 
 /* This is duplicated from constants.h in libsel4 for the moment. Interrupt allocation
    shouldn't be happening here in this driver, until that is fixed this hack is needed */
@@ -357,7 +358,10 @@ static int ltimer_hpet_init_internal(ltimer_t *ltimer, ps_io_ops_t ops, ltimer_c
 
 int ltimer_default_init(ltimer_t *ltimer, ps_io_ops_t ops, ltimer_callback_fn_t callback, void *callback_token)
 {
-    int error = ltimer_default_describe(ltimer, ops);
+    rsdp_ptr = (acpi_rsdp_t *) callback_token;
+    // Reset the callback token to null
+    callback_token = NULL;
+    int error = ltimer_default_describe_with_rsdp(ltimer, ops, *rsdp_ptr);
     if (error) {
         return error;
     }
